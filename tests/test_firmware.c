@@ -1,26 +1,34 @@
 #include "data_buffer.h"
 #include "sensor_manager.h"
 #include "telemetry.h"
+#include "mqtt_client.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 
-static bool mock_sensor(float *temperature, float *vibration, void *context) {
-    (void)context;
-    *temperature = 24.5f;
-    *vibration = 0.125f;
+typedef struct { unsigned connects; unsigned publishes; unsigned disconnects; } transport_state_t;
+
+static bool mock_connect(void *context) {
+    ((transport_state_t *)context)->connects++;
     return true;
+}
+static bool mock_publish(void *context, const char *topic, const char *payload, size_t len) {
+    transport_state_t *state = (transport_state_t *)context;
+    state->publishes++;
+    return topic != NULL && payload != NULL && len > 0U;
+}
+static void mock_disconnect(void *context) {
+    ((transport_state_t *)context)->disconnects++;
+}
+static bool mock_sensor(float *temperature, float *vibration, void *context) {
+    (void)context; *temperature = 24.5f; *vibration = 0.125f; return true;
 }
 static bool invalid_sensor(float *temperature, float *vibration, void *context) {
-    (void)context;
-    *temperature = NAN;
-    *vibration = 0.1f;
-    return true;
+    (void)context; *temperature = NAN; *vibration = 0.1f; return true;
 }
 static bool failed_sensor(float *temperature, float *vibration, void *context) {
-    (void)temperature; (void)vibration; (void)context;
-    return false;
+    (void)temperature; (void)vibration; (void)context; return false;
 }
 
 int main(void) {
@@ -54,6 +62,17 @@ int main(void) {
     assert(!telemetry_serialize_json(&input, json, 4U));
     input.temperature_c = NAN;
     assert(!telemetry_serialize_json(&input, json, sizeof json));
+
+    transport_state_t state = {0U, 0U, 0U};
+    mqtt_transport_t transport = { mock_connect, mock_publish, mock_disconnect, &state };
+    assert(mqtt_client_connect(&transport) == MQTT_STATUS_CONNECTED);
+    assert(state.connects == 1U);
+    assert(mqtt_client_publish_json(&transport, "demo/device/telemetry", "{\"ok\":true}", 11U));
+    assert(state.publishes == 1U);
+    assert(!mqtt_client_publish_json(&transport, NULL, "{}", 2U));
+    mqtt_client_disconnect(&transport);
+    assert(state.disconnects == 1U);
+    assert(mqtt_client_connect(NULL) == MQTT_STATUS_ERROR);
     puts("PASS test_firmware");
     return 0;
 }
