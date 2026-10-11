@@ -15,5 +15,5 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install -r requirements-dev.txt
       - run: python3 simulator/mock_sensor.py --count 10 --out /tmp/samples.jsonl
-      - run: cc -std=c11 -Wall -Wextra -Werror -pedantic -Ifirmware/App tests/test_firmware.c firmware/App/data_buffer.c firmware/App/telemetry.c firmware/App/sensor_manager.c -lm -o /tmp/test_firmware && /tmp/test_firmware
+      - run: cc -std=c11 -Wall -Wextra -Werror -pedantic -Ifirmware/App tests/test_firmware.c firmware/App/data_buffer.c firmware/App/telemetry.c firmware/App/sensor_manager.c firmware/App/mqtt_client.c -lm -o /tmp/test_firmware && /tmp/test_firmware
       - run: python -m pytest -q tests
