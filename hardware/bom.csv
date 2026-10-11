@@ -1,0 +1,6 @@
+reference,category,manufacturer,part_number,quantity,voltage_or_interface,status,notes
+MCU,controller,TBD,TBD,1,TBD,not-selected,Choose exact STM32 part/board and vendor toolchain
+TEMP_SENSOR,sensor,TBD,TBD,1,TBD,not-selected,Specify calibrated range, accuracy, interface and wiring
+VIBRATION_SENSOR,sensor,TBD,TBD,1,TBD,not-selected,Specify bandwidth, physical units, mounting and signal conditioning
+NETWORK_IF,connectivity,TBD,TBD,1,TBD,not-selected,Select Wi-Fi/Ethernet/cellular path and TLS-capable library
+POWER,power,TBD,TBD,1,TBD,not-selected,Determine supply range and current budget after component selection
