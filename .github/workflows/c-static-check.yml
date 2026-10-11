@@ -1,0 +1,16 @@
+name: C compiler checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - run: cc -std=c11 -Wall -Wextra -Werror -pedantic -Ifirmware/App -c firmware/App/data_buffer.c -o /tmp/data_buffer.o
+      - run: cc -std=c11 -Wall -Wextra -Werror -pedantic -Ifirmware/App -c firmware/App/telemetry.c -o /tmp/telemetry.o
+      - run: cc -std=c11 -Wall -Wextra -Werror -pedantic -Ifirmware/App -c firmware/App/sensor_manager.c -o /tmp/sensor_manager.o
+      - run: cc -std=c11 -Wall -Wextra -Werror -pedantic -Ifirmware/App -c firmware/App/mqtt_client.c -o /tmp/mqtt_client.o
